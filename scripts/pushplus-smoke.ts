@@ -45,7 +45,7 @@ await pushplus({
       writeFileSync(
         output,
         JSON.stringify(
-          { accepted: true, receipt, at: new Date().toISOString(), meaning: "平台受理，微信接收待本人确认" },
+          { accepted: true, receipt, at: new Date().toISOString(), meaning: "平台受理，钉钉接收待本人确认" },
           null,
           2,
         ),
