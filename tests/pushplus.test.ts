@@ -23,7 +23,13 @@ const card: Card = {
   link: null,
 };
 
-async function delivery(reply: unknown, status = 200, cards = [card], delay = 0) {
+async function delivery(
+  reply: unknown,
+  status = 200,
+  cards = [card],
+  delay = 0,
+  channelOptions: Record<string, unknown> = {},
+) {
   const requests: Record<string, unknown>[] = [];
   const server = createServer(async (req, res) => {
     let body = "";
@@ -60,6 +66,7 @@ async function delivery(reply: unknown, status = 200, cards = [card], delay = 0)
         allowTestEndpoint: true,
         tokenEnv,
         timeoutMs: delay ? 20 : 1000,
+        ...channelOptions,
       },
       log: (line) => logs.push(line),
       signal: stop.signal,
@@ -86,6 +93,16 @@ test("PushPlus accepts a personal plain text message and keeps its receipt witho
     [11, 2, "receipt-11"],
   ]);
   assert.deepEqual(result.failed, []);
+});
+
+test("PushPlus can route a notice through a configured webhook option", async () => {
+  const result = await delivery({ code: 200, data: "webhook-receipt-11" }, 200, [card], 0, {
+    channel: "webhook",
+    option: "pushplus",
+  });
+  assert.deepEqual(result.requests, [
+    { token: "test-secret-never-log", title: card.title, content: card.text, channel: "webhook", option: "pushplus" },
+  ]);
 });
 
 test("PushPlus rejects business errors, malformed responses and HTTP failures without leaking secrets", async () => {

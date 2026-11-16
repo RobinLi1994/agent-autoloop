@@ -1,4 +1,4 @@
-// A one-way personal channel. A PushPlus receipt means accepted, not read or delivered to WeChat.
+// A one-way personal channel. A PushPlus receipt means accepted, not read or delivered to the target channel.
 import { execFile } from "node:child_process";
 import { homedir, userInfo } from "node:os";
 import { join } from "node:path";
@@ -28,6 +28,17 @@ type Context = {
 
 const runFile = promisify(execFile);
 const endpoint = "https://www.pushplus.plus/send";
+
+function messageFields(options: Context["options"], token: string, title: string, content: string) {
+  const channel = String(options.channel ?? "wechat");
+  if (channel === "wechat") return { token, title, content, template: "txt", channel };
+  if (channel === "webhook") {
+    const option = typeof options.option === "string" ? options.option.trim() : "";
+    if (!option) throw new Error("PUSHPLUS_WEBHOOK_OPTION_MISSING");
+    return { token, title, content, channel, option };
+  }
+  throw new Error("PUSHPLUS_CHANNEL_INVALID");
+}
 
 async function credential(options: Context["options"]) {
   if (typeof options.keychainService === "string") {
@@ -94,7 +105,7 @@ export default async function pushplus({ hub, options, log, signal }: Context) {
       const response = await fetch(url, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ token, title: card.title, content, template: "txt", channel: "wechat" }),
+        body: JSON.stringify(messageFields(options, token, card.title, content)),
         redirect: "error",
         signal: AbortSignal.any([signal, AbortSignal.timeout(Number(options.timeoutMs ?? 30_000))]),
       });

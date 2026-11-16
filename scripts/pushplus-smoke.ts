@@ -33,9 +33,9 @@ await pushplus({
           state: "closed",
           options: [],
           link: null,
-          title: "agent-autoloop PushPlus 连通性测试",
+          title: "agent-autoloop PushPlus 钉钉 Webhook 连通性测试",
           text:
-            "这是一条你授权的真实测试消息。Codex 后台调用和 PushPlus 插件本地测试均已通过。收到这条消息说明本人微信接收链路可用；周报自动化正在接入。测试时间：" +
+            "这是一条你授权的真实测试消息。Codex 后台调用和 PushPlus 插件本地测试均已通过。收到这条消息说明 PushPlus 到钉钉 Webhook 的转发链路可用；周报自动化正在使用该通道。测试时间：" +
             new Date().toLocaleString("zh-CN", { timeZone: "Asia/Shanghai" }),
         },
       };
@@ -57,7 +57,7 @@ await pushplus({
       console.error("真实测试未受理：" + error);
     },
   },
-  options: { keychainService: "codex.pushplus.user-token" },
+  options: { keychainService: "codex.pushplus.user-token", channel: "webhook", option: "pushplus" },
   log: (message) => console.error(message),
   signal: stop.signal,
 });
